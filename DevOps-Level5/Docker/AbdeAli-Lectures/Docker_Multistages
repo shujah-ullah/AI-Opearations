@@ -1,0 +1,109 @@
+===========Docker Multi Stages ==============
+------one docker file for Multi stage images---------
+Docker file for multistages
+
+FROM node:18-alpine as prod
+ARG PORT=8000
+ENV PORT=$PORT
+WORKDIR app
+copy src src
+copy package.json .
+RUN npm install --only=prod
+EXPOSE $PORT
+CMD npm run start:prod
+
+FROM prod as dev
+RUN npm install --only=dev
+CMD npm start
+
+-------------------------------
+
+alpine image is used to install node packages; tag is prod
+
+another image as dev from prod image is inherited.
+
+one docker file for Multi stage images
+
+alpine image >> node JS >> prod 
+			     v
+			    dev
+
+---------------------------------
+Build images
+
+Without MUltistages: docker build -t my-node-app:prod .
+With multistages: docker build -t my-node-app:prod --target=prod .
+ 
+[root@server1 DeployApp]# docker images                                                             
+REPOSITORY                                       TAG       IMAGE ID       CREATED          SIZE      
+my-node-app                                     prod      78f2316292ec   14 seconds ago   138MB
+my_node-app                                     latest    bda76c627a98   10 days ago      1.1GB
+
+Note: Diff bw sizes of as prod image and latest image is noteable; this is due to reason that we have used light wait base image (alpine) to build the node app ad prod:
+
+[root@server1 DeployApp]# docker build -t my-node-app:dev --target=dev .
+above command will build another image from docker file; this time as dev which is inherited from prod image:
+
+[root@server1 DeployApp]# docker images | head -n 3
+REPOSITORY                                      TAG       IMAGE ID       CREATED         SIZE
+my-node-app                                     dev       6494ee2cc21e   2 minutes ago   140MB
+my-node-app                                     prod      78f2316292ec   7 minutes ago   138MB
+
+size diff b/c we are not installing nodemon directory in the prod environment
+du -sh nodemon/
+400K	nodemon/
+
+NOw Run containers from images dev and prod:
+[root@server1 DeployApp]# docker run --name my_prod -p 8003:8000 -d -v $pwd\src:/home/shujah/bind_data my-node-app:prod    >> prod container
+[root@server1 DeployApp]# docker run --name my_dev -p 8003:8000 -d -v $pwd\src:/home/shujah/bind_data my-node-app:dev      >> dev container
+
+Connect with container 
+root@server1:/home/shujah/bind_data# docker exec -it my_dev /bin/sh
+/app # ls
+node_modules       package-lock.json  package.json       src
+/app # du -sh node_modules/
+5.1M	node_modules/
+
+
+[root@server1 DeployApp]# docker exec -it my_prod /bin/sh
+/app # ls
+node_modules       package-lock.json  package.json       src
+/app # cd src
+/app/src # ls
+index.js
+/app/src # cd ..
+/app # du -sh
+3.6M	.
+/app # du -sh node_modules/
+3.5M	node_modules/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

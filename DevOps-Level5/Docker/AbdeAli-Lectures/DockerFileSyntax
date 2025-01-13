@@ -1,0 +1,65 @@
+Lecture 20 : Docker notes
+
+
+
+RUN Commands :-
+====================================
+#docker run --> Image to container
+vim Dockerfile
+RUN apt-get install git
+
+RUN python script.py
+
+
+CMD and ENTRYPOINT
+
+RUn -->> it just execute the linux command --> Installation (apt,yum,dnf)
+
+Question : Is the run command replacebale with any other commands ?
+YES or not ?
+Answer : NO
+
+Method:1
+RUN apt-get update
+RUN apt-get install -y curl
+RUN apt-get install httpd curl git update -y
+
+Method 2:
+RUN apt-get update && RUN apt-get install -y curl && RUN apt-get install -y git --> Intermeidate laayer only one
+RUN apt-get install git && apt-get install httpd && apt-get install curl
+
+Both command output are same.
+
+
+
+ENV :-
+ENV command use for define variable and also we can override the value using -e
+#docker run -e
+
+vim Dockerfile
+ENV ADMIN_USER="mark"
+RUN echo $ADMIN_USER > ./mark
+
+
+#docker run --rm test sh -c 'echo $ADMIN_USER'
+
+docker run --name mycont --rm -d  test sh -c 'echo $ADMIN_USER'
+docker run  --name mycont1 -d  test sh -c 'echo $ADMIN_USER'
+
+Version 1 : Dockerfile
+FROM alpine
+ENV ADMIN_USER="mark"
+RUN echo $ADMIN_USER > ./mark
+RUN unset ADMIN_USER
+
+Layer ---> 4
+
+
+Version 2 : Dockerfile
+FROM alpine
+RUN export ADMIN_USER="mark" && echo $ADMIN_USER > ./mark && unset ADMIN_USER
+CMD sh
+
+layer --> 3
+
+EXPORT or EXPOSE

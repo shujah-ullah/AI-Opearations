@@ -1,0 +1,35 @@
+Default docker path
+===============================
+
+
+Default docker path : /var/lib/docker
+Key file location : /etc/docker/key.json
+
+mkdir /home/docker
+
+
+systemctl stop docker.socket
+systemctl stop docker.service
+vim /etc/docker/daemon.json
+
+{
+"data-root": "/home/docker"
+}
+
+
+cp -axT /var/lib/docker/ /home/docker/
+
+vim /lib/systemd/system/docker.service
+ExecStart=/usr/bin/dockerd -H fd:// -g /home/docker --containerd=/run/containerd/containerd.sock
+
+systemctl daemon-reload
+systemctl start  docker.service
+systemctl start  docker.socket
+
+
+Image ID Path : /home/docker/image/overlay2/imagedb/content/sha256
+
+# systemctl status docker.service
+
+
+============================================================================================

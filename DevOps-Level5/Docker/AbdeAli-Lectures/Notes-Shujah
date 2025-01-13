@@ -1,0 +1,205 @@
+Docker Cmds
+----------Start/Stop docker----------
+Systemctl start/stop docker
+systemctl status docker
+
+------- docker images and containers---------
+sudo docker images
+sudo docker ps >> list running containers only
+sudo docker ps -a >> list all running and stopped containers
+
+----------Running new container = Pull image from docker hub + start the container------------
+sudo docker run <image name>
+sudo docker run --name myfirst hello-world
+docker run -it ubuntu bash   >>this will start ubuntu container and open/attach its terminal like this
+root@484ea6fa4e3d:/# 
+docker run -d ubuntu  >> this will run container in the background,This is used when you want the container to run without attaching to your terminal, useful for services or applications that don’t require direct interaction.
+
+>>>>To remove image >>>>>>
+sudo docker rm <image id>   
+sudo docker run --rm --name myfirst hello-world
+
+----------- Start container from local image---------
+docker start <container ID>
+docker run -it --name <name for container> <local image> /bin/sh
+docker exec <container ID> <command>  >>>>this will work if container is running by shell command /bin/bash
+docker start --attach <container ID>  >>> if container is not running /bin/bash cmd we have to attach it with docker start cmd
+
+>>>>>container ID can be found by running docker ps -a <<<<<<<<<<<
+
+---------STOP and remove Running containers------------
+docker stop $(docker ps -q)  >>> This will stop all running containers
+docker stop <container_name_or_id>
+docker kill <container_name_or_id>  >> Force stop a container
+docker kill $(docker ps -q) >> force stop all running containers
+
+docker rm <container_name_or_id> >> remove stopped containers
+docker container prune  >> remove all stopped containers
+
+docker ps -q --filter "status=running" | xargs docker stop  >> stop containers using filters.
+
+--------Building docker images from docker file:----------------
+
+docker build -t imagename .  
+>> docker build >> docker file >> RUN instructions given in Docker file >> check image by docker images
+
+Building docker images from docker Container:
+docker commit <OLD image> <New Image:tag>
+
+
+--------Pushing image to Docker HUB:-----------------
+
+1. Login to Doker hub account
+2. Create new repository for example "falcon"
+3. docker push shujah/falcon:tagname   >> use this command to push images
+4. docker tag firstimage:latest shujah/falcon:latest  >> to rename image with repository Tag
+5. docker push shujah/falcon:latest  >> To push image to repo shujah/falcon
+#docker tag <OldimageID:tag> <DockerHUBuserID> /<New imageID:tag>
+
+
+-------------NOtes-------------
+whenevr we rename an image its ID remains same either image is build from docker file or commited from container.
+
+If we rebuild same image with docker file then image ID remains SAME for both images (this only applies if there is no change made in the first image before rebuild)
+
+IMage ID changes whenever any changes made in base image before build.
+
+Docker commit always gives different image IDs bc commit is made after changes
+Same image with 2 same containers when commit have diff image IDs
+
+
+Dangline images >> Tag name <NONE>, only Image ID
+
+---------- POrt MApping--------------
+docker.sock file in path /var/run is file which connects docker client with docker host (server). often we need to restart or rebuild the file when docker client is not connecting to host.
+
+ Systemctl start docker.socket >> this will start docker host like systemctl start docker
+ 
+ PORT MAPPING
+ Container POrt >> Host MAchine POrt
+ 
+ docker run -it -p 9000:80 --name mywebserver ngnix:latest
+ -p >> port mapping
+ 9000 >> Host port   80 >> Container POrt
+ 
+ 
+ -----------Docker Volumes------------------
+ Docker storage types :-
+1. Volumes (Via docker home) --> /var/lib/docker
+2. Bind Mount (FIle system mount)
+3. tmpfs(RAM)
+
+Docker Home / Docker Area:
+ [root@server1 /]# ls /var/lib/docker/
+buildkit  containers  engine-id  image  network  overlay2  plugins  runtimes  swarm  tmp  volumes
+
+Docker Volumes path inside DOcker ARea / DOcker home:
+[root@server1 /]# ls /var/lib/docker/volumes   or docker volume ls
+
+1ce7bb58f45f32f87d5b1fb8ca100243fbdf62330e702298091dae02e40c2ae9  backingFsBlockDev
+3b4ffd24f6fe968f8336364d8e1cb8762723973efc7017c941958ae7217f7358  metadata.db
+55a1c9347b59c1bbf969598f8e053ef94f0a728c6e72ecfc1496b7ae7740e9a2
+
+docker image path : /var/lib/docker/image/overlay2/imagedb/metadata/sha256
+
+Docker storage :-
+1. Docker volumes :- These are stored on the host file system that docker managers , on my ubuntu system path is /var/lib/docker/volumes
+
+2. Bind Mounts :- These allow sotrage to be mounted from anywhere on the host system. for example /home/aadmin/data. you could even mount /data,Container data will sored into filesystem like vfs, zfs,overlay overlay2 etc
+
+3. tmpfs : its stored into RAM when reboot your machine then your data will wipe out.
+
+/home/aadmin/data --> changes happened
+/data --> changes will replicated
+
+how to find your docker volume ?
+docker inspect <container name>
+in the mount section>> Source "container volume path"  >> this is your container volume >> compare with docker volume ls 
+ 
+ ----------------DOcker Volumes Hands-On----------------
+1- Docker volumes
+ [root@server1 /]# docker run -it --name container1 -v /my_storage alpine /bin/sh
+/ # ls
+bin         home        mnt         proc        sbin        tmp
+dev         lib         my_storage  root        srv         usr
+etc         media       opt         run         sys         var
+
+-v flag is used for volume /mystorage this volume is created in alpine image not in the base machine
+
+where is my_storage in local storage:
+
+/var/lib/docker/volumes/b7fcdaa07b893f04fbf324d690289a61bf99cf340655df57015b81d7e1b45245/_data  >>>>> my_storage
+----------------------------------------------------------------------------
+what if two containers have same volume name?
+each container will create new volume with different id, and data of both containers will be seperate:
+
+example:
+[root@server1 /]# docker run -it --name container1 -v /my_storage alpine /bin/sh
+>>>  /var/lib/docker/volumes/b7fcdaa07b893f04fbf324d690289a61bf99cf340655df57015b81d7e1b45245/_data 
+
+[root@server1 /]# docker run -it --name container3 -v /my_storage alpine /bin/sh
+>>>  /var/lib/docker/volumes/b7fcdaa07b893f04fbf324d690289a61bf99cf340655df5701/_data 
+
+NOte that ids of both containers are different, although voume name of both containers is same, it will store in different locations (inside container id: )
+
+-----------------------------------------------
+To remove a volume:
+docker volume rm <volume id>
+
+2- Bind MOunt
+Method1:
+docker run -it --name container3 -v /home/shujah/bind_data/:/opt/data alpine  /bin/sh
+
+/home/shujah/bind_data  >> /opt/data  (note this /opt/data is dir inside our container not on base machine)
+Method 2:
+docker run -it --name container3 --mount type=bind,source=/home/shujah/bind_data/,destination=/opt/data alpine /bin/sh 
+3- Tmpfs mount
+docker run -d -it --name tmptest1 --mount type=tmpfs,destination=/app alpine /bin/sh
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

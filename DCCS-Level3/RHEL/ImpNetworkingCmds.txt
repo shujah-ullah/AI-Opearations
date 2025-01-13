@@ -1,0 +1,53 @@
+@@@@@@@@@@@@@@@ MOst used IP Networking Commands @@@@@@@@@@@@@@
+ifconfig	#older one
+ip		#new one 
+ip address
+
+route -n  	#to show default Gateway IP
+ip route show default
+
+
+
+
+%%%%%%%%%%%%configuring ip using ifconfig %%%%%%%%%%%%%%
+ifconfig connection-name  <ip address> netmask <network mask>
+
+%%%%%%%%%%%% configuring IP using network manager in RHEL %%%%%%%%
+# Configure the IP address and netmask
+###for DHCP
+sudo nmcli connection modify Ethernet ipv4.method auto
+
+sudo nmcli connection modify Ethernet ipv4.method manual ipv4.addresses 192.168.1.100/24
+
+# Configure the gateway
+sudo nmcli connection modify Ethernet ipv4.gateway 192.168.1.1
+
+# Configure the nameservers
+sudo nmcli connection modify Ethernet ipv4.dns 8.8.8.8,8.8.4.4
+#restart network manager
+sudo systemctl restart NetworkManager
+# Apply the changes
+sudo nmcli connection up connectionname
+
+%%%%%%%%%%% Making IP changes persistent %%%%%%%%%%%%%%
+In previous RHEL versions network config are saved in <etc/sysconfig/network-scripts/ifcfg>
+Im using Rhel 9 and here network configurations are saved in
+/etc/NetworkManager/system-connections
+to make IP changes persitent just set "Autoconnect=TRUE" and save
+
+%%%%%%%%%%% Adding Name server %%%%%%%%%%%%%%%%%
+#adding name server
+1) vi /etc/resolve.conf
+2) press i for insert mode
+3) add line nameserver <ip of nameserver> 
+ip of google name server is 8.8.8.8
+
+%%%%%%%%% setting up default GW %%%%%%%%%%%%%%
+route add default gw 192.168.1.1
+
+
+
+
+
+
+

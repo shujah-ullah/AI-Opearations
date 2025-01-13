@@ -1,0 +1,83 @@
+------------------****************** AWS CLoud Computing *********************---------------------------------
+
+ssh -i EC2Key.pem  ec2-user@13.60.17.169
+
+What is AWS?
+
+AWS is a cloud service provider that enables you to:
+
+Compute: Run virtual servers and containers.
+Storage: Store files and data.
+Databases: Use managed database services.
+Networking: Set up and manage networks.
+Analytics: Process data and generate insights.
+Machine Learning: Build and train machine learning models.
+Security: Secure your infrastructure and applications.
+Key AWS Services
+Compute Services
+EC2 (Elastic Compute Cloud): Provides scalable virtual servers.
+Lambda: Run code without provisioning servers (serverless).
+ECS (Elastic Container Service): Run and manage Docker containers.
+Storage Services
+s3 Bucket: Like google drive, drop box, one drive, Object storage for any type of data.
+EBS: ELastic Block Storage, Block storage Volume Attached with ec2 instance. 
+Glacier: Low-cost storage for data archiving and backup.
+Database Services
+RDS (Relational Database Service): Managed relational database service.
+DynamoDB: Managed NoSQL database service.
+Aurora: High-performance, scalable relational database service.
+Networking Services
+VPC (Virtual Private Cloud): Isolated network for AWS resources.
+Route 53: Scalable DNS and domain name registration.
+CloudFront: Content delivery network (CDN).
+Management and Monitoring
+CloudWatch: Monitoring for AWS resources and applications.
+CloudTrail: Track user activity and API usage.
+-----------------------------------------
+AMI:  Preconfigured EC2 instances with (operating system, application server, and applications).
+ELastic IP: A Public IP that is persistent and doesnt change after reboot. In production systems Elastic IP is used with EC2 Instances.
+AZ: Availability ZOnes
+
+-----------------------------------------------
+EBS(elastic block storage)
+1. EBS VOlumes
+2. EBS Snapshots
+
+EBS VOlumes
+
+General Purpose			Provisiones IOPS		HDD VOLUME(SATA)		Previous Generation
+--------------------------------------------------------------------------------------------------------------------
+
+   ssd		|       ssd			|	     SATA		           |     HDD 
+gp3    gp2	|iO02       io01		|throughput optimized       cold           |    Standard
+16000 IOPS      |256000      64000iops          | 500iops                    250iops       | 40 -200   
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
